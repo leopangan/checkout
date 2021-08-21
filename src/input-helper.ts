@@ -118,5 +118,8 @@ export function getInputs(): IGitSourceSettings {
   result.persistCredentials =
     (core.getInput('persist-credentials') || 'false').toUpperCase() === 'TRUE'
 
+  const sparseCheckoutPatterns = core.getInput('sparse-checkout-patterns')
+  result.sparseCheckoutPatterns = sparseCheckoutPatterns ? sparseCheckoutPatterns.split(' ').map(s => s.trim()) : [];
+
   return result
 }

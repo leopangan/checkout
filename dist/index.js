@@ -5804,7 +5804,7 @@ class GitCommandManager {
             return output.exitCode === 0;
         });
     }
-    fetch(refSpec, fetchDepth) {
+    fetch(refSpec, fetchDepth, sparse) {
         return __awaiter(this, void 0, void 0, function* () {
             const args = ['-c', 'protocol.version=2', 'fetch'];
             if (!refSpec.some(x => x === refHelper.tagsRefSpec)) {
@@ -5816,6 +5816,9 @@ class GitCommandManager {
             }
             else if (fshelper.fileExistsSync(path.join(this.workingDirectory, '.git', 'shallow'))) {
                 args.push('--unshallow');
+            }
+            if (sparse) {
+                args.push('--sparse');
             }
             args.push('origin');
             for (const arg of refSpec) {
@@ -5918,6 +5921,12 @@ class GitCommandManager {
         return __awaiter(this, void 0, void 0, function* () {
             const args = ['rev-parse', '--verify', '--quiet', `${sha}^{object}`];
             const output = yield this.execGit(args, true);
+            return output.exitCode === 0;
+        });
+    }
+    sparseCheckoutSet(patterns) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const output = yield this.execGit(['sparse-checkout', 'set', ...patterns], true);
             return output.exitCode === 0;
         });
     }
@@ -6239,6 +6248,12 @@ function getSource(settings) {
             if (settings.lfs) {
                 core.startGroup('Fetching LFS objects');
                 yield git.lfsFetch(checkoutInfo.startPoint || checkoutInfo.ref);
+                core.endGroup();
+            }
+            // Sparse checkout set
+            if (settings.sparseCheckoutPatterns.length) {
+                core.startGroup('Setting up sparse checkout');
+                yield git.sparseCheckoutSet(settings.sparseCheckoutPatterns);
                 core.endGroup();
             }
             // Checkout
@@ -14598,6 +14613,8 @@ function getInputs() {
     // Persist credentials
     result.persistCredentials =
         (core.getInput('persist-credentials') || 'false').toUpperCase() === 'TRUE';
+    const sparseCheckoutPatterns = core.getInput('sparse-checkout-patterns');
+    result.sparseCheckoutPatterns = sparseCheckoutPatterns ? sparseCheckoutPatterns.split(' ').map(s => s.trim()) : [];
     return result;
 }
 exports.getInputs = getInputs;

@@ -105,6 +105,11 @@ Refer [here](https://github.com/actions/checkout/blob/v1/README.md) for previous
     #
     # Default: false
     submodules: ''
+
+    # A set of patterns written to the sparse-checkout file, to reduce the checkout to
+    # a set of paths
+    # This can be used to checkout specific subdirectories of a repo.
+    sparse-checkout-patterns: ''
 ```
 <!-- end usage -->
 

@@ -68,6 +68,11 @@ inputs:
       When the `ssh-key` input is not provided, SSH URLs beginning with `git@github.com:` are
       converted to HTTPS.
     default: false
+  sparse-checkout-patterns:
+    description: >
+      A set of patterns written to the sparse-checkout file, to reduce the checkout to a set of paths
+
+      This can be used to checkout specific subdirectories of a repo.
 runs:
   using: node12
   main: dist/index.js

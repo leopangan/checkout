@@ -728,6 +728,7 @@ async function setup(testName: string): Promise<void> {
       git.env[name] = value
     }),
     shaExists: jest.fn(),
+    sparseCheckoutSet: jest.fn(),
     submoduleForeach: jest.fn(async () => {
       return ''
     }),
@@ -770,7 +771,8 @@ async function setup(testName: string): Promise<void> {
     repositoryPath: '',
     sshKey: sshPath ? 'some ssh private key' : '',
     sshKnownHosts: '',
-    sshStrict: true
+    sshStrict: true,
+    sparseCheckoutPatterns: [],
   }
 }
 

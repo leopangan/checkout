@@ -24,7 +24,7 @@ export interface IGitCommandManager {
     globalConfig?: boolean
   ): Promise<void>
   configExists(configKey: string, globalConfig?: boolean): Promise<boolean>
-  fetch(refSpec: string[], fetchDepth?: number): Promise<void>
+  fetch(refSpec: string[], fetchDepth?: number, sparse?: boolean): Promise<void>
   getDefaultBranch(repositoryUrl: string): Promise<string>
   getWorkingDirectory(): string
   init(): Promise<void>
@@ -37,6 +37,7 @@ export interface IGitCommandManager {
   revParse(ref: string): Promise<string>
   setEnvironmentVariable(name: string, value: string): void
   shaExists(sha: string): Promise<boolean>
+  sparseCheckoutSet(patterns: string[]): Promise<boolean>
   submoduleForeach(command: string, recursive: boolean): Promise<string>
   submoduleSync(recursive: boolean): Promise<void>
   submoduleUpdate(fetchDepth: number, recursive: boolean): Promise<void>
@@ -168,7 +169,7 @@ class GitCommandManager {
     return output.exitCode === 0
   }
 
-  async fetch(refSpec: string[], fetchDepth?: number): Promise<void> {
+  async fetch(refSpec: string[], fetchDepth?: number, sparse?: boolean): Promise<void> {
     const args = ['-c', 'protocol.version=2', 'fetch']
     if (!refSpec.some(x => x === refHelper.tagsRefSpec)) {
       args.push('--no-tags')
@@ -183,6 +184,10 @@ class GitCommandManager {
       )
     ) {
       args.push('--unshallow')
+    }
+
+    if (sparse) {
+      args.push('--sparse');
     }
 
     args.push('origin')
@@ -287,6 +292,11 @@ class GitCommandManager {
   async shaExists(sha: string): Promise<boolean> {
     const args = ['rev-parse', '--verify', '--quiet', `${sha}^{object}`]
     const output = await this.execGit(args, true)
+    return output.exitCode === 0
+  }
+
+  async sparseCheckoutSet(patterns: string[]): Promise<boolean> {
+    const output = await this.execGit(['sparse-checkout', 'set', ...patterns], true)
     return output.exitCode === 0
   }
 
